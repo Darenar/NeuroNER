@@ -20,6 +20,7 @@ import brat_to_conll
 import numpy as np
 import utils_nlp
 import distutils
+from distutils import util
 import configparser
 from pprint import pprint
 # http://stackoverflow.com/questions/42217532/tensorflow-version-1-0-0-rc2-on-windows-opkernel-op-bestsplits-device-typ
@@ -115,7 +116,7 @@ class NeuroNER(object):
             elif k in ['remap_unknown_tokens_to_unk', 'use_character_lstm', 'use_crf', 'train_model', 'use_pretrained_model', 'debug', 'verbose',
                      'reload_character_embeddings', 'reload_character_lstm', 'reload_token_embeddings', 'reload_token_lstm', 'reload_feedforward', 'reload_crf',
                      'check_for_lowercase', 'check_for_digits_replaced_with_zeros', 'freeze_token_embeddings', 'load_only_pretrained_token_embeddings', 'load_all_pretrained_token_embeddings']:
-                parameters[k] = distutils.util.strtobool(v)
+                parameters[k] = util.strtobool(v)
         # If loading pretrained model, set the model hyperparameters according to the pretraining parameters 
         if parameters['use_pretrained_model']:
             pretraining_parameters = self._load_parameters(parameters_filepath=os.path.join(parameters['pretrained_model_folder'], 'parameters.ini'), verbose=False)[0]
@@ -154,8 +155,14 @@ class NeuroNER(object):
     
                 # Brat text files do not exist
                 else:
-    
                     # Populate brat text and annotation files based on conll file
+                    print('CONLL TO BRAT',
+                        '1:',dataset_filepaths[dataset_type],
+                        '2:',dataset_compatible_with_brat_filepath,
+                        '3:',dataset_brat_folders[dataset_type],
+                        '4:',dataset_brat_folders[dataset_type]
+                        )
+
                     conll_to_brat.conll_to_brat(dataset_filepaths[dataset_type], dataset_compatible_with_brat_filepath, dataset_brat_folders[dataset_type], dataset_brat_folders[dataset_type])
                     dataset_filepaths[dataset_type] = dataset_compatible_with_brat_filepath
     
@@ -168,7 +175,9 @@ class NeuroNER(object):
                         conll_to_brat.check_compatibility_between_conll_and_brat_text(dataset_filepath_for_tokenizer, dataset_brat_folders[dataset_type])
                     else:
                         # Populate conll file based on brat files
-                        brat_to_conll.brat_to_conll(dataset_brat_folders[dataset_type], dataset_filepath_for_tokenizer, parameters['tokenizer'], parameters['spacylanguage'])
+                        print('BRAT_TO_CONLL','dataset_brat_folders:',dataset_brat_folders[dataset_type],'dataset_filepath_for_tokenizer',dataset_filepath_for_tokenizer)
+
+                        brat_to_conll.brat_to_conll(dataset_brat_folders[dataset_type], dataset_filepath_for_tokenizer)
                     dataset_filepaths[dataset_type] = dataset_filepath_for_tokenizer
     
                 # Brat text files do not exist
@@ -475,7 +484,7 @@ class NeuroNER(object):
         # Print and output result
         text_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', os.path.basename(dataset_brat_deploy_filepath))
         annotation_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', '{0}.ann'.format(utils.get_basename_without_extension(dataset_brat_deploy_filepath)))
-        text2, entities = brat_to_conll.get_entities_from_brat(text_filepath, annotation_filepath, verbose=True)
+        text2, entities = brat_to_conll.get_entities_from_brat(text_filepath, annotation_filepath, verbose=False)
         assert(text == text2)
         return entities
     

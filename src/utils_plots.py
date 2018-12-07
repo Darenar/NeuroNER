@@ -33,7 +33,8 @@ def show_values(pc, fmt="%.2f", **kw):
     By HYRY
     '''
     pc.update_scalarmappable()
-    ax = pc.get_axes()
+    # ax = pc.get_axes()
+    ax = pc.axes
     for p, color, value in zip(pc.get_paths(), pc.get_facecolors(), pc.get_array()):
         x, y = p.vertices[:-2, :].mean(0)
         if np.all(color[:3] > 0.5):
@@ -143,7 +144,8 @@ def plot_classification_report(classification_report, title='Classification repo
     else:
         lines = classification_report.split('\n')
         for line in lines[2 : (len(lines) - 1)]:
-            t = line.strip().replace('avg / total', 'micro-avg').split()
+            # t = line.strip().replace('avg / total', 'micro-avg').split()
+            t = line.strip().replace(' avg', '-avg').split()
             if len(t) < 2: continue
             classes.append(t[0])
             v = [float(x)*100 for x in t[1: len(t) - 1]]
