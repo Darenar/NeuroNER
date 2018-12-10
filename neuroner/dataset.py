@@ -1,8 +1,7 @@
 import sklearn.preprocessing
-import utils
+from neuroner import utils, utils_nlp
 import collections
 import codecs
-import utils_nlp
 import re
 import time
 import token

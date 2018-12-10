@@ -2,10 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sklearn.metrics
 import os
-import utils_plots
+from neuroner import utils_plots, utils_nlp
 import json
 import time
-import utils_nlp
 
 
 def assess_model(y_pred, y_true, labels, target_names, labels_with_o, target_names_with_o, dataset_type, stats_graph_folder, epoch_number, parameters,

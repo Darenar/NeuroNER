@@ -5,11 +5,9 @@ import os
 import pickle
 from pprint import pprint
 import shutil
-import utils
-import main
-from entity_lstm import EntityLSTM
+from neuroner import utils, main, utils_tf
+from neuroner.entity_lstm import EntityLSTM
 import tensorflow as tf
-import utils_tf
 from tensorflow.python.tools.inspect_checkpoint import print_tensors_in_checkpoint_file
 import glob
 
