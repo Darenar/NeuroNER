@@ -122,7 +122,7 @@ class NeuroNER(object):
         if verbose: pprint(parameters)
         # Update conf_parameters to reflect final parameter values
         conf_parameters = configparser.ConfigParser()
-        conf_parameters.read(os.path.join('test', 'test-parameters-training.ini'))
+        conf_parameters.read(os.path.join(os.path.dirname(__file__), 'test-parameters-training.ini'))
         parameter_to_section = utils.get_parameter_to_section_of_configparser(conf_parameters)
         for k, v in parameters.items():
             conf_parameters.set(parameter_to_section[k], k, str(v))
