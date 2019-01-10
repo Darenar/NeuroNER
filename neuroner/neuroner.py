@@ -446,7 +446,7 @@ class NeuroNER(object):
         self.prediction_count += 1        
         
         if self.prediction_count == 1:
-            self.parameters['dataset_text_folder'] = os.path.join('..', 'data', 'temp')
+            self.parameters['dataset_text_folder'] = os.path.join(self.parameters['dataset_text_folder'], 'data', 'temp')
             self.stats_graph_folder, _ = self._create_stats_graph_folder(self.parameters)
         
         # Update the deploy folder, file, and dataset 
