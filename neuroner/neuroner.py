@@ -443,39 +443,49 @@ class NeuroNER(object):
             writers[dataset_type].close()
 
     def predict(self, text):
-        self.prediction_count += 1        
-        
-        if self.prediction_count == 1:
+        self.prediction_count += 1
+        prediction_count = self.prediction_count
+
+        if prediction_count == 1:
             self.parameters['dataset_text_folder'] = os.path.join(self.parameters['dataset_text_folder'], 'data', 'temp')
             self.stats_graph_folder, _ = self._create_stats_graph_folder(self.parameters)
-        
+
+        dataset_text_folder = os.path.join(self.parameters['dataset_text_folder'], str(prediction_count))
+
         # Update the deploy folder, file, and dataset 
         dataset_type = 'deploy'
-        ### Delete all deployment data    
-        for filepath in glob.glob(os.path.join(self.parameters['dataset_text_folder'], '{0}*'.format(dataset_type))):
-            if os.path.isdir(filepath): 
+        ### Delete all deployment data
+        for filepath in glob.glob(
+                os.path.join(dataset_text_folder, '{0}*'.format(dataset_type))):
+            if os.path.isdir(filepath):
                 shutil.rmtree(filepath)
             else:
                 os.remove(filepath)
         ### Create brat folder and file
-        dataset_brat_deploy_folder = os.path.join(self.parameters['dataset_text_folder'], dataset_type)
+        dataset_brat_deploy_folder = os.path.join(dataset_text_folder, dataset_type)
         utils.create_folder_if_not_exists(dataset_brat_deploy_folder)
-        dataset_brat_deploy_filepath = os.path.join(dataset_brat_deploy_folder, 'temp_{0}.txt'.format(str(self.prediction_count).zfill(5)))#self._get_dataset_brat_deploy_filepath(dataset_brat_deploy_folder) 
+        dataset_brat_deploy_filepath = os.path.join(dataset_brat_deploy_folder, 'temp_{0}.txt'.format(str(prediction_count).zfill(5)))#self._get_dataset_brat_deploy_filepath(dataset_brat_deploy_folder)
         with codecs.open(dataset_brat_deploy_filepath, 'w', 'UTF-8') as f:
             f.write(text)
         ### Update deploy filepaths
-        dataset_filepaths, dataset_brat_folders = self._get_valid_dataset_filepaths(self.parameters, dataset_types=[dataset_type])
-        self.dataset_filepaths.update(dataset_filepaths)
-        self.dataset_brat_folders.update(dataset_brat_folders)        
+        parameters = {
+            'tagging_format': self.parameters['tagging_format'],
+            'tokenizer': self.parameters['tokenizer'],
+            'dataset_text_folder': dataset_text_folder
+        }
+
+        dataset_filepaths, dataset_brat_folders = self._get_valid_dataset_filepaths(parameters, dataset_types=[dataset_type])
+        dataset_filepaths = {**self.dataset_filepaths, **dataset_filepaths}
+        dataset_brat_folders = {**self.dataset_brat_folders, **dataset_brat_folders}
         ### Update the dataset for the new deploy set
-        self.dataset.update_dataset(self.dataset_filepaths, [dataset_type])
-        
+        self.dataset.update_dataset(dataset_filepaths, [dataset_type])
+
         # Predict labels and output brat
         output_filepaths = {}
-        prediction_output = train.prediction_step(self.sess, self.dataset, dataset_type, self.model, self.transition_params_trained, self.stats_graph_folder, self.prediction_count, self.parameters, self.dataset_filepaths)
+        prediction_output = train.prediction_step(self.sess, self.dataset, dataset_type, self.model, self.transition_params_trained, self.stats_graph_folder, prediction_count, self.parameters, dataset_filepaths)
         _, _, output_filepaths[dataset_type] = prediction_output
-        conll_to_brat.output_brat(output_filepaths, self.dataset_brat_folders, self.stats_graph_folder, overwrite=True)
-        
+        conll_to_brat.output_brat(output_filepaths, dataset_brat_folders, self.stats_graph_folder, overwrite=True)
+
         # Print and output result
         text_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', os.path.basename(dataset_brat_deploy_filepath))
         annotation_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', '{0}.ann'.format(utils.get_basename_without_extension(dataset_brat_deploy_filepath)))
