@@ -478,11 +478,12 @@ class NeuroNER(object):
         dataset_filepaths = {**self.dataset_filepaths, **dataset_filepaths}
         dataset_brat_folders = {**self.dataset_brat_folders, **dataset_brat_folders}
         ### Update the dataset for the new deploy set
-        self.dataset.update_dataset(dataset_filepaths, [dataset_type])
+        dataset = self._get_dataset_for_predict()
+        dataset.update_dataset(dataset_filepaths, [dataset_type])
 
         # Predict labels and output brat
         output_filepaths = {}
-        prediction_output = train.prediction_step(self.sess, self.dataset, dataset_type, self.model, self.transition_params_trained, self.stats_graph_folder, prediction_count, self.parameters, dataset_filepaths)
+        prediction_output = train.prediction_step(self.sess, dataset, dataset_type, self.model, self.transition_params_trained, self.stats_graph_folder, prediction_count, self.parameters, dataset_filepaths)
         _, _, output_filepaths[dataset_type] = prediction_output
         conll_to_brat.output_brat(output_filepaths, dataset_brat_folders, self.stats_graph_folder, overwrite=True)
 
@@ -490,7 +491,7 @@ class NeuroNER(object):
         text_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', os.path.basename(dataset_brat_deploy_filepath))
         annotation_filepath = os.path.join(self.stats_graph_folder, 'brat', 'deploy', '{0}.ann'.format(utils.get_basename_without_extension(dataset_brat_deploy_filepath)))
         text2, entities = brat_to_conll.get_entities_from_brat(text_filepath, annotation_filepath, verbose=False)
-        assert(text == text2)
+        assert(text == text2), Ne
         return entities
     
     def get_params(self):
@@ -501,5 +502,17 @@ class NeuroNER(object):
     
     def __del__(self):
         self.sess.close()
-    
 
+    def _get_dataset_for_predict(self):
+        dataset = ds.Dataset()
+
+        dataset.token_to_index = self.dataset.token_to_index.copy()
+        dataset.character_to_index = self.dataset.character_to_index.copy()
+        dataset.label_to_index = self.dataset.label_to_index.copy()
+        dataset.index_to_label = self.dataset.index_to_label.copy()
+        dataset.index_to_character = self.dataset.index_to_character.copy()
+
+        dataset.UNK_TOKEN_INDEX = self.dataset.UNK_TOKEN_INDEX
+        dataset.PADDING_CHARACTER_INDEX = self.dataset.PADDING_CHARACTER_INDEX
+
+        return dataset

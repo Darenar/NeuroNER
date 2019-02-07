@@ -18,6 +18,17 @@ class Dataset(object):
         self.verbose = verbose
         self.debug = debug
 
+        self.labels = {}
+        self.tokens = {}
+
+        self.token_indices = {}
+        self.label_indices = {}
+        self.character_indices_padded = {}
+        self.character_indices = {}
+        self.token_lengths = {}
+        self.characters = {}
+        self.label_vector_indices = {}
+
     def _parse_dataset(self, dataset_filepath):
         token_count = collections.defaultdict(lambda: 0)
         label_count = collections.defaultdict(lambda: 0)
