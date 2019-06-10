@@ -22,6 +22,7 @@ setup(
         'scipy==1.2.0',
         'pycorenlp==0.3.0',
         'spacy==2.0.9',
+        'numpy',
     ],
 
 
